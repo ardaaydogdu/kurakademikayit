@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Giriş Yap{% endblock %}
+
+{% block content %}
+<h1>Sisteme Giriş</h1>
+
+<div class="card" style="max-width:420px;margin:0 auto;">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if error %}
+            <div style="background:rgba(127,29,29,0.5);border-radius:10px;padding:8px 10px;margin-bottom:12px;font-size:.9rem;">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <div style="margin-bottom:12px;">
+            <label for="id_username">Kullanıcı Adı</label>
+            <input type="text" name="username" id="id_username" required>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label for="id_password">Şifre</label>
+            <input type="password" name="password" id="id_password" required>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width:100%;text-align:center;">Giriş Yap</button>
+    </form>
+</div>
+{% endblock %}
+

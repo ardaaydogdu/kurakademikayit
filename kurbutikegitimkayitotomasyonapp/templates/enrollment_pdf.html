@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 15mm;
+        }
+
+        body {
+            font-family: DejaVuSans, Arial, sans-serif;
+            font-size: 10pt;
+            color: #0f172a;
+            line-height: 1.4;
+        }
+
+        .header {
+            display: table;
+            width: 100%;
+            border-bottom: 2px solid #1d4ed8;
+            padding-bottom: 10px;
+            margin-bottom: 18px;
+        }
+
+        .header td {
+            vertical-align: middle;
+        }
+
+        .logo {
+            height: 55px;
+        }
+
+        .title {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 18pt;
+            margin: 0;
+            color: #1d4ed8;
+        }
+
+        .subtitle {
+            font-size: 9pt;
+            color: #475569;
+            margin-top: 4px;
+        }
+
+        h2 {
+            font-size: 12pt;
+            margin: 18px 0 8px;
+            color: #f97316;
+            border-left: 4px solid #f97316;
+            padding-left: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        th, td {
+            border: 1px solid #cbd5f5;
+            padding: 6px 8px;
+            font-size: 9pt;
+        }
+
+        th {
+            background: #eff6ff;
+            color: #1e293b;
+            width: 30%;
+        }
+
+        .section-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 6px 8px;
+            background: #fafafa;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .sign-row {
+            margin-top: 60px;
+            width: 100%;
+        }
+
+        .sign-cell {
+            width: 45%;
+            text-align: center;
+            font-size: 9pt;
+        }
+
+        .sign-line {
+            margin-top: 40px;
+            border-top: 1px solid #0f172a;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .footer-note {
+            font-size: 8pt;
+            color: #64748b;
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<table class="header">
+    <tr>
+        <td width="20%">
+            <img src="SRC_MEB_IMAGE_PATH" class="logo">
+        </td>
+        <td width="60%" class="title">
+            <h1>Kur Butik Eğitim</h1>
+            <div class="subtitle">Öğrenci Kayıt ve Ödeme Bilgi Formu</div>
+        </td>
+        <td width="20%" align="right">
+            <img src="SRC_IMAGE_PATH" class="logo">
+        </td>
+    </tr>
+</table>
+
+<h2>Öğrenci Bilgileri</h2>
+<div class="section-box">
+    <table>
+        <tr><th>Ad Soyad</th><td>{{ student.full_name }}</td></tr>
+        <tr><th>T.C. Kimlik No</th><td>{{ student.national_id }}</td></tr>
+        <tr><th>Doğum Tarihi</th><td>{{ student.birth_date }}</td></tr>
+        <tr><th>Cinsiyet</th><td>{{ student.get_gender_display }}</td></tr>
+        <tr><th>Okul</th><td>{{ student.school }}</td></tr>
+        <tr><th>Sınıf</th><td>{{ student.get_school_class_display }}</td></tr>
+    </table>
+</div>
+
+<h2>Veli Bilgileri</h2>
+<div class="section-box">
+    <table>
+        <tr>
+            <th>Ad Soyad</th>
+            <th>T.C.</th>
+            <th>Yakınlık</th>
+            <th>Telefon</th>
+            <th>E-posta</th>
+            <th>Adres</th>
+        </tr>
+        {% for g in guardians %}
+        <tr>
+            <td>{{ g.full_name }}</td>
+            <td>{{ g.national_id }}</td>
+            <td>{{ g.get_relation_display }}</td>
+            <td>{{ g.phone }}</td>
+            <td>{{ g.email }}</td>
+            <td>{{ g.address }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<h2>Acil Durum Bilgisi</h2>
+<div class="section-box">
+    <table>
+        <tr><th>İlgili Kişi</th><td>{{ student.emergency_contact_name }}</td></tr>
+        <tr><th>Telefon</th><td>{{ student.emergency_contact_phone }}</td></tr>
+    </table>
+</div>
+
+<h2>Eğitim Bilgileri</h2>
+<div class="section-box">
+    <table>
+        <tr><th>Program</th><td>{{ enrollment.program.name }}</td></tr>
+        <tr><th>Başlangıç Tarihi</th><td>{{ enrollment.start_date }}</td></tr>
+        <tr><th>Seviye / Kur</th><td>{{ enrollment.level }}</td></tr>
+    </table>
+</div>
+
+{% if payment_plan %}
+<h2>Ödeme Bilgileri</h2>
+<div class="section-box">
+    <table>
+        <tr><th>Toplam Ücret</th><td>{{ payment_plan.total_amount }} TL</td></tr>
+        <tr><th>Ödeme Şekli</th><td>{{ payment_plan.get_payment_method_display }}</td></tr>
+        <tr><th>Ödenen</th><td>{{ payment_plan.total_paid }} TL</td></tr>
+        <tr><th>Kalan</th><td>{{ payment_plan.remaining }} TL</td></tr>
+    </table>
+</div>
+{% endif %}
+
+<table class="sign-row">
+    <tr>
+        <td class="sign-cell">
+            <div class="sign-line"></div>
+            Kurum Yetkilisi
+        </td>
+        <td class="sign-cell">
+            <div class="sign-line"></div>
+            Veli
+        </td>
+    </tr>
+</table>
+
+<div class="footer-note">
+    Bu belge, kayıt tarihinde taraflarca okunmuş ve onaylanmıştır.
+</div>
+
+</body>
+</html>

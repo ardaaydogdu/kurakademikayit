@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıt Detayı{% endblock %}
+
+{% block content %}
+<h1>Kayıt Detayı</h1>
+
+<div class="card">
+    <h3>Öğrenci</h3>
+    <p><strong>{{ enrollment.student.full_name }}</strong> - {{ enrollment.student.school_class }} / {{ enrollment.student.school }}</p>
+    <p>T.C: {{ enrollment.student.national_id }}</p>
+    <p>Acil Durum: {{ enrollment.student.emergency_contact_name }} - {{ enrollment.student.emergency_contact_phone }}</p>
+</div>
+
+<div class="card">
+    <h3>Eğitim Bilgileri</h3>
+    <p>Program: <span class="badge">{{ enrollment.program.name }}</span></p>
+    <p>Seviye/Kur: <span class="badge badge-warning">{{ enrollment.level }}</span></p>
+    <p>Başlangıç Tarihi: {{ enrollment.start_date }}</p>
+</div>
+
+<div class="card">
+    <h3>Veli Bilgileri</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Ad Soyad</th>
+            <th>T.C</th>
+            <th>Yakınlık</th>
+            <th>Telefon</th>
+            <th>E-posta</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for g in enrollment.student.guardians.all %}
+            <tr>
+                <td>{{ g.full_name }}</td>
+                <td>{{ g.national_id }}</td>
+                <td>{{ g.get_relation_display }}</td>
+                <td>{{ g.phone }}</td>
+                <td>{{ g.email }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">Veli bilgisi yok.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Ödeme Bilgileri</h3>
+    {% if payment_plan %}
+        <p>Toplam Ücret: <strong>{{ payment_plan.total_amount }} TL</strong></p>
+        <p>Ödeme Şekli: {{ payment_plan.get_payment_method_display }}</p>
+        {% if payment_plan.installment_count %}
+            <p>Taksit Sayısı: {{ payment_plan.installment_count }}</p>
+        {% endif %}
+        <p>Ödenen: {{ payment_plan.total_paid }} TL</p>
+        <p>Kalan: {{ payment_plan.remaining }} TL</p>
+
+        <h4>Taksit / Ödemeler</h4>
+        <table>
+            <thead>
+            <tr>
+                <th>Tutar</th>
+                <th>Durum</th>
+                <th>Ödeme Tarihi</th>
+                <th>Açıklama</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for i in payment_plan.installments.all %}
+                <tr>
+                    <td>{{ i.amount }} TL</td>
+                    <td>
+                        {% if i.is_paid %}
+                            <span class="badge badge-success">Ödendi</span>
+                        {% else %}
+                            <span class="badge badge-warning">Bekliyor</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ i.paid_at|default:"-" }}</td>
+                    <td>{{ i.notes }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4">Henüz ödeme girişi yapılmamış.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <form method="post" action="{% url 'payment_add_installment' enrollment.pk %}" style="margin-top:16px;">
+            {% csrf_token %}
+            <h4>Yeni Ödeme / Taksit Ekle</h4>
+            <div class="grid-2">
+                <div>{{ installment_form.amount.label_tag }}{{ installment_form.amount }}</div>
+                <div>{{ installment_form.is_paid.label_tag }}{{ installment_form.is_paid }}</div>
+            </div>
+            
+            <div class="grid-2">
+                <div>{{ installment_form.paid_at.label_tag }}{{ installment_form.paid_at }}</div>
+            </div>
+            <div class="grid-2">
+                <div>{{ installment_form.notes.label_tag }}{{ installment_form.notes }}</div>
+            </div>
+            <button type="submit" class="btn-secondary">Ödeme Kaydet</button>
+        </form>
+    {% else %}
+        <p>Ödeme planı bulunamadı.</p>
+    {% endif %}
+</div>
+
+<a href="{% url 'enrollment_pdf' enrollment.pk %}" class="btn-primary">PDF Oluştur</a>
+<a href="{% url 'student_create' %}" class="btn-secondary">Yeni Kayıt</a>
+{% endblock %}
+

@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Öğrenci Detayı{% endblock %}
+
+{% block styles %}
+<style>
+  /* Kart + tablo responsive */
+
+  .table-desktop { display:block; }
+  .cards-mobile { display:none; }
+
+  .table-wrap{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius:12px;
+    border:1px solid #1f2937;
+    margin-top:10px;
+  }
+
+  .enrollment-card{
+    border:1px solid #1f2937;
+    border-radius:12px;
+    padding:14px;
+    background: radial-gradient(circle at top left, rgba(15,23,42,.9), #020617 55%);
+    margin-top:12px;
+  }
+  .enrollment-card h4{
+    margin:0 0 10px 0;
+    font-size: 1rem;
+    color:#f9fafb;
+  }
+  .kv{
+    display:flex;
+    gap:10px;
+    justify-content:space-between;
+    padding:8px 0;
+    border-top:1px solid rgba(31,41,55,.9);
+    font-size:.92rem;
+  }
+  .kv:first-of-type{ border-top:none; padding-top:0; }
+  .k{ opacity:.9; }
+  .v{ text-align:right; max-width:60%; overflow-wrap:anywhere; }
+
+  .row-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .row-actions a{
+    margin:0 !important;
+    white-space:nowrap;
+  }
+
+  .page-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:14px;
+  }
+
+  @media (max-width: 768px){
+    .table-desktop{ display:none; }
+    .cards-mobile{ display:block; }
+
+    .page-actions a{
+      width:100%;
+      text-align:center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Öğrenci Detayı</h1>
+
+<div class="card">
+  <h3>Öğrenci Bilgileri</h3>
+  <p><strong>{{ student.full_name }}</strong> - {{ student.get_school_class_display }} / {{ student.school }}</p>
+  <p>T.C: {{ student.national_id }}</p>
+  <p>Doğum Tarihi: {{ student.birth_date }}</p>
+  <p>Cinsiyet: {{ student.get_gender_display }}</p>
+  <p>Acil Durum: {{ student.emergency_contact_name }} - {{ student.emergency_contact_phone }}</p>
+</div>
+
+<div class="card">
+  <h3>Veli Bilgileri</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Ad Soyad</th>
+          <th>T.C</th>
+          <th>Yakınlık</th>
+          <th>Telefon</th>
+          <th>E-posta</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in student.guardians.all %}
+          <tr>
+            <td>{{ g.full_name }}</td>
+            <td>{{ g.national_id }}</td>
+            <td>{{ g.get_relation_display }}</td>
+            <td>{{ g.phone }}</td>
+            <td>{{ g.email }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">Veli bilgisi yok.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Kayıtlar &amp; Ödemeler</h3>
+
+  <!-- DESKTOP: TABLO -->
+  <div class="table-desktop">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th>Kur</th>
+            <th>Başlangıç</th>
+            <th>Toplam Ücret</th>
+            <th>Ödenen</th>
+            <th>Kalan</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in enrollments %}
+            <tr>
+              <td>{{ e.program.name }}</td>
+              <td>{{ e.level }}</td>
+              <td>{{ e.start_date }}</td>
+
+              {% if e.payment_plan %}
+                <td>{{ e.payment_plan.total_amount }} TL</td>
+                <td>{{ e.payment_plan.total_paid }} TL</td>
+                <td>{{ e.payment_plan.remaining }} TL</td>
+              {% else %}
+                <td colspan="3">Ödeme planı yok</td>
+              {% endif %}
+
+              <td>
+                <div class="row-actions">
+                  <a href="{% url 'enrollment_detail' e.pk %}" class="btn-secondary">Detay / Ödeme Ekle</a>
+                  <a href="{% url 'enrollment_pdf' e.pk %}" class="btn-primary">PDF</a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7">Bu öğrenci için henüz kurs kaydı yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MOBILE: KARTLAR -->
+  <div class="cards-mobile">
+    {% for e in enrollments %}
+      <div class="enrollment-card">
+        <h4>{{ e.program.name }}</h4>
+
+        <div class="kv">
+          <div class="k">Kur</div>
+          <div class="v"><span class="badge badge-warning">{{ e.level }}</span></div>
+        </div>
+
+        <div class="kv">
+          <div class="k">Başlangıç</div>
+          <div class="v">{{ e.start_date }}</div>
+        </div>
+
+        {% if e.payment_plan %}
+          <div class="kv">
+            <div class="k">Toplam</div>
+            <div class="v"><strong>{{ e.payment_plan.total_amount }} TL</strong></div>
+          </div>
+          <div class="kv">
+            <div class="k">Ödenen</div>
+            <div class="v">{{ e.payment_plan.total_paid }} TL</div>
+          </div>
+          <div class="kv">
+            <div class="k">Kalan</div>
+            <div class="v">{{ e.payment_plan.remaining }} TL</div>
+          </div>
+        {% else %}
+          <div class="kv">
+            <div class="k">Ödeme</div>
+            <div class="v">Ödeme planı yok</div>
+          </div>
+        {% endif %}
+
+        <div class="row-actions">
+          <a href="{% url 'enrollment_detail' e.pk %}" class="btn-secondary">Detay / Ödeme Ekle</a>
+          <a href="{% url 'enrollment_pdf' e.pk %}" class="btn-primary">PDF</a>
+        </div>
+      </div>
+    {% empty %}
+      <div class="enrollment-card">
+        Bu öğrenci için henüz kurs kaydı yok.
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="page-actions">
+  <a href="{% url 'student_create' %}" class="btn-primary">Yeni Kayıt Oluştur</a>
+</div>
+{% endblock %}

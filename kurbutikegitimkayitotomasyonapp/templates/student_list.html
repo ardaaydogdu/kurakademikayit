@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Öğrenci Listesi{% endblock %}
+
+{% block styles %}
+<style>
+  .filter-form{
+    align-items:end;
+  }
+
+  .table-wrap{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius:12px;
+    border:1px solid #1f2937;
+    margin-top:10px;
+  }
+  .table-wrap table{
+    width:100%;
+    min-width: 640px;
+  }
+
+  .student-link{
+    color:#f97316;
+    text-decoration:none;
+    font-weight:600;
+  }
+  .student-link:hover{
+    text-decoration:underline;
+  }
+
+  @media (max-width: 640px){
+    .filter-form{
+      grid-template-columns: 1fr !important;
+      gap:12px !important;
+    }
+    .filter-actions{
+      width:100%;
+    }
+    .filter-actions .btn-secondary{
+      width:100%;
+      text-align:center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Öğrenciler</h1>
+
+<div class="card" style="margin-bottom:16px;">
+  <form method="get" class="grid-3 filter-form">
+    <div>
+      <label>Şube</label>
+      <select name="branch">
+        <option value="">Tümü</option>
+        {% for b in branches %}
+          <option value="{{ b.id }}" {% if selected_branch and b.id == selected_branch.id %}selected{% endif %}>
+            {{ b.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button type="submit" class="btn-secondary">Filtrele</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Ad Soyad</th>
+          <th>T.C</th>
+          <th>Sınıf</th>
+          <th>Okul</th>
+          <th>Kayıtlar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+          <tr>
+            <td>
+              <a href="{% url 'student_detail' s.pk %}" class="student-link">{{ s.full_name }}</a>
+            </td>
+            <td>{{ s.national_id }}</td>
+            <td>{{ s.get_school_class_display }}</td>
+            <td>{{ s.school }}</td>
+            <td>{{ s.enrollments.count }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">Henüz öğrenci kaydı yok.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

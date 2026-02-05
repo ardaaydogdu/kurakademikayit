@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Yeni Öğrenci Kaydı{% endblock %}
+
+{% block content %}
+<h1>Yeni Öğrenci Kaydı</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {# Hata özetleri #}
+    {% if student_form.errors or guardian_formset.non_form_errors or enrollment_form.errors or payment_plan_form.errors %}
+        <div class="card" style="border-color:#b91c1c;background:rgba(127,29,29,0.4);margin-bottom:20px;">
+            <h3>Formda eksik veya hatalı alanlar var</h3>
+            <ul style="font-size:.85rem;">
+                {% for field_name, errors in student_form.errors.items %}
+                    <li><strong>Öğrenci:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+                {% for error in guardian_formset.non_form_errors %}
+                    <li><strong>Veli:</strong> {{ error }}</li>
+                {% endfor %}
+                {% for field_name, errors in enrollment_form.errors.items %}
+                    <li><strong>Eğitim:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+                {% for field_name, errors in payment_plan_form.errors.items %}
+                    <li><strong>Ödeme:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <h3>Öğrenci Bilgileri</h3>
+        <div class="grid-2">
+            <div>{{ student_form.full_name.label_tag }}{{ student_form.full_name }}</div>
+            <div>{{ student_form.national_id.label_tag }}{{ student_form.national_id }}</div>
+            <div>{{ student_form.birth_date.label_tag }}{{ student_form.birth_date }}</div>
+            <div>{{ student_form.gender.label_tag }}{{ student_form.gender }}</div>
+            <div>{{ student_form.school.label_tag }}{{ student_form.school }}</div>
+            <div>{{ student_form.school_class.label_tag }}{{ student_form.school_class }}</div>
+            <div>{{ student_form.emergency_contact_name.label_tag }}{{ student_form.emergency_contact_name }}</div>
+            <div>{{ student_form.emergency_contact_phone.label_tag }}{{ student_form.emergency_contact_phone }}</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Veli Bilgileri</h3>
+        {{ guardian_formset.management_form }}
+        <div id="guardians-container">
+            {% for form in guardian_formset %}
+                <div class="card guardian-form" style="background:rgba(15,23,42,.8); border-style:dashed; margin-bottom:8px;">
+                    <div class="grid-2">
+                        <div>{{ form.full_name.label_tag }}{{ form.full_name }}</div>
+                        <div>{{ form.national_id.label_tag }}{{ form.national_id }}</div>
+                        <div>{{ form.relation.label_tag }}{{ form.relation }}</div>
+                        <div>{{ form.phone.label_tag }}{{ form.phone }}</div>
+                        <div>{{ form.email.label_tag }}{{ form.email }}</div>
+                        <div>{{ form.address.label_tag }}{{ form.address }}</div>
+                    </div>
+             
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Boş şablon form (JS ile çoğaltmak için) -->
+        <div id="empty-guardian-form" style="display:none;">
+            <div class="card guardian-form" style="background:rgba(15,23,42,.8); border-style:dashed; margin-bottom:8px;">
+                <div class="grid-2">
+                    <div>{{ guardian_formset.empty_form.full_name.label_tag }}{{ guardian_formset.empty_form.full_name }}</div>
+                    <div>{{ guardian_formset.empty_form.national_id.label_tag }}{{ guardian_formset.empty_form.national_id }}</div>
+                    <div>{{ guardian_formset.empty_form.relation.label_tag }}{{ guardian_formset.empty_form.relation }}</div>
+                    <div>{{ guardian_formset.empty_form.phone.label_tag }}{{ guardian_formset.empty_form.phone }}</div>
+                    <div>{{ guardian_formset.empty_form.email.label_tag }}{{ guardian_formset.empty_form.email }}</div>
+                    <div>{{ guardian_formset.empty_form.address.label_tag }}{{ guardian_formset.empty_form.address }}</div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn-secondary" id="add-guardian-btn">+ Veli Ekle</button>
+        <p style="font-size:.8rem;color:#9ca3af;margin-top:8px;">Bir öğrenci için birden fazla veli ekleyebilirsiniz.</p>
+    </div>
+
+    <div class="card">
+        <h3>Eğitim Bilgileri</h3>
+        <div class="grid-3">
+            <div>{{ enrollment_form.program.label_tag }}{{ enrollment_form.program }}</div>
+            <div>{{ enrollment_form.branch.label_tag }}{{ enrollment_form.branch }}</div>
+            <div>{{ enrollment_form.start_date.label_tag }}{{ enrollment_form.start_date }}</div>
+        </div>
+        <div class="grid-2" style="margin-top:12px;">
+            <div>{{ enrollment_form.level.label_tag }}{{ enrollment_form.level }}</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Ödeme Bilgisi</h3>
+        <div class="grid-2">
+            <div>{{ payment_plan_form.total_amount.label_tag }}{{ payment_plan_form.total_amount }}</div>
+            <div>{{ payment_plan_form.payment_method.label_tag }}{{ payment_plan_form.payment_method }}</div>
+        </div>
+        <div class="grid-2" id="installment-count-wrapper" style="margin-top:12px; display:none;">
+            <div>{{ payment_plan_form.installment_count.label_tag }}{{ payment_plan_form.installment_count }}</div>
+        </div>
+        <p style="font-size:.8rem;color:#9ca3af;">Taksitli ödemede taksit sayısını seç, ödeme geldikçe aşağıdan taksit/ödeme ekleyerek takip et.</p>
+    </div>
+
+    <button type="submit" class="btn-primary">Kaydı Oluştur</button>
+</form>
+
+<script>
+    // Veli ekleme - formset
+    (function() {
+        const addBtn = document.getElementById("add-guardian-btn");
+        const container = document.getElementById("guardians-container");
+        const emptyFormEl = document.getElementById("empty-guardian-form");
+        if (!addBtn || !container || !emptyFormEl) return;
+
+        addBtn.addEventListener("click", function () {
+            const totalFormsInput = document.querySelector('#id_guardians-TOTAL_FORMS');
+            if (!totalFormsInput) return;
+            const currentCount = parseInt(totalFormsInput.value, 10);
+            const newFormHtml = emptyFormEl.innerHTML.replace(/__prefix__/g, currentCount);
+            container.insertAdjacentHTML("beforeend", newFormHtml);
+            totalFormsInput.value = currentCount + 1;
+        });
+    })();
+
+    // Taksit sayısı alanını ödeme şekline göre göster/gizle
+    (function() {
+        const methodSelect = document.getElementById("id_payment_method");
+        const wrapper = document.getElementById("installment-count-wrapper");
+        const countInput = document.getElementById("id_installment_count");
+        if (!methodSelect || !wrapper || !countInput) return;
+
+        function toggleInstallment() {
+            if (methodSelect.value === "taksit") {
+                wrapper.style.display = "grid";
+            } else {
+                wrapper.style.display = "none";
+                countInput.value = "";
+            }
+        }
+
+        methodSelect.addEventListener("change", toggleInstallment);
+        toggleInstallment();
+    })();
+</script>
+{% endblock %}
+
