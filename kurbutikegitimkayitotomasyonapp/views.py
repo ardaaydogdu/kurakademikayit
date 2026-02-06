@@ -88,7 +88,6 @@ def student_create(request):
             payment_plan.enrollment = enrollment
             payment_plan.save()
 
-            messages.success(request, "Öğrenci Kaydı Başarıyla Oluşturuldu")
             return redirect("enrollment_detail", pk=enrollment.pk)
     else:
         student_form = StudentForm()

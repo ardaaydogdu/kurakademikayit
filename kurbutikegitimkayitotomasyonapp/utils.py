@@ -136,7 +136,6 @@ def render_to_pdf(template_src, context_dict=None, filename="kayit.pdf"):
         title_y = logo_y + logo_h / 2 + 2 * mm
         canvas.setFillColor(INK)
         canvas.setFont(bold_font, 13)
-        canvas.drawCentredString(w / 2, title_y, "Kur Butik Eğitim")
         canvas.setFillColor(MUTED)
         canvas.setFont(base_font, 9.5)
         canvas.drawCentredString(w / 2, title_y - 6 * mm, "Öğrenci Kayıt & Ödeme Bilgi Formu")
