@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "kurakademikayit.onrender.com",
-    "https://kurakademikayit-production.up.railway.app",
+    "kurakademikayit-production.up.railway.app",
 ]
 
 
